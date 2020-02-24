@@ -1,6 +1,6 @@
 
 // Written for the BOOSTER Conference Bergen 2020 
-// by John Christian Lønningdal and Ricky Sickenger
+// by John Christian Lønningdal and Ricki Sickenger
 
 // Adds a short basic program that does as SYS basic command to the start
 //-----------------------------------------------------------------------------------
