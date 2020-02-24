@@ -25,7 +25,7 @@ Press F5 to compile and run!
 
 # Folder structure:
 ```
-bin/      Binary output folder
+bin/       Binary output folder
 lib/       Library asm files
 res/       Resources like charsets and sprites
 design/    Design of charsets and sprites
