@@ -43,3 +43,6 @@ Pixcen to edit bitmaps: http://hammarberg.github.io/pixcen/
 
 Paint.net to edit pixel images using layers (all tools above can import from these if needed): https://www.getpaint.net/
 
+Goattracker for SID Music creation: https://csdb.dk/release/?id=152420
+
+Exomizer for compressing program/data for unpacking on C64: https://csdb.dk/release/?id=173655
