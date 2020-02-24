@@ -1,0 +1,18 @@
+
+An overview of the full 6502 instruction site
+https://www.masswerk.at/6502/6502_instruction_set.html
+
+A full C64 memory map
+https://sta.c64.org/cbm64mem.html
+
+A good site about programming for the C64
+https://dustlayer.com/
+
+Great resource for code examples for doing almost anything on a C64.
+https://codebase64.org/doku.php
+
+List of all KERNAL functions
+https://sta.c64.org/cbm64krnfunc.html
+
+Some ripped fonts from misc games and apps
+http://kofler.dot.at/c64/font_02.html

@@ -1,0 +1,16 @@
+parsing
+Got 3 errors while executing:
+  (C:\Users\jcl.INNOVIT\Dropbox\Private\booster\examples\src\main.asm 5:9) Can't open file: lib/zp.asm
+  (C:\Users\jcl.INNOVIT\Dropbox\Private\booster\examples\src\main.asm 6:9) Can't open file: lib/io.asm
+  (C:\Users\jcl.INNOVIT\Dropbox\Private\booster\examples\src\main.asm 7:9) Can't open file: lib/kernal.asm
+
+// We can split up code in several files and import them as needed
+// Import some to simplify coding the C64 zp/io/kernal
+//-----------------------------------------------------------------------------------
+#import "lib/zp.asm"
+        ^
+
+Error: Can't open file: lib/zp.asm
+at line 5, column 9 in main.asm
+
+
