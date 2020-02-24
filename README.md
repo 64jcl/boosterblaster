@@ -1,8 +1,8 @@
 # boosterblaster
-A simple game developed for the Commodore 64 for the Booster 2020 Conference
+A simple game developed in 6502 assembly for the Commodore 64 for the Booster 2020 Conference
 by John Christian Lønningdal and Ricky Sickenger
 
-Installation instructions
+# Installation instructions
 
 1. Install Visual Studio Code
 
@@ -23,11 +23,12 @@ Alternatively create another location for your tools and modify settings.json to
 
 Press F5 to compile and run!
 
-Folder structure:
-
-bin/
-lib/
-res/
-design/
-docs/
-examples/
+# Folder structure:
+```
+bin/      Binary output folder
+lib/       Library asm files
+res/       Resources like charsets and sprites
+design/    Design of charsets and sprites
+docs/      Some helping documents for coding
+examples/  A couple of 6502 code examples
+```
