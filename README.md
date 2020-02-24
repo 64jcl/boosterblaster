@@ -32,3 +32,14 @@ design/    Design of charsets and sprites
 docs/      Some helping documents for coding
 examples/  A couple of 6502 code examples
 ```
+
+# Some tools we recommend
+
+Charpad to edit character/tile sets: http://www.subchristsoftware.com/charpadfree/index.htm
+
+Spritepad to edit sprites: http://www.subchristsoftware.com/spritepad/index.htm
+
+Pixcen to edit bitmaps: http://hammarberg.github.io/pixcen/
+
+Paint.net to edit pixel images using layers (all tools above can import from these if needed): https://www.getpaint.net/
+
