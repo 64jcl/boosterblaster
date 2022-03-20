@@ -39,11 +39,13 @@ Charpad to edit character/tile sets: http://www.subchristsoftware.com/charpadfre
 
 Spritepad to edit sprites: http://www.subchristsoftware.com/spritepad/index.htm
 
+Character editor for character sets (online) : https://lvllvl.com/
+
 SpriteMate to edit sprites (online) : http://www.spritemate.com/
 
 Pixcen to edit bitmaps: http://hammarberg.github.io/pixcen/
 
-Paint.net to edit pixel images using layers (all tools above can import from these if needed): https://www.getpaint.net/
+Paint.net to edit pixel images using layers (all tools above can import from PNG if needed): https://www.getpaint.net/
 
 Goattracker for SID Music creation: https://csdb.dk/release/?id=152420
 

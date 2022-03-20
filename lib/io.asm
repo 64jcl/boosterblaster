@@ -272,6 +272,7 @@
     .label FREQUENCY_LO   = $d400
     .label FREQUENCY_HI   = $d401
 
+    // Pulse width for when sound is pulse waveform
     .label PULSE_WIDTH_LO = $d402
     .label PULSE_WIDTH_HI = $d403
 
@@ -282,7 +283,7 @@
     //  Bit #3: 1 = Disable voice, reset noise generator.
     //  Bit #4: 1 = Triangle waveform enabled.
     //  Bit #5: 1 = Saw waveform enabled.
-    //  Bit #6: 1 = Rectangle waveform enabled.
+    //  Bit #6: 1 = Pulse waveform enabled.
     //  Bit #7: 1 = Noise enabled.
     .label CONTROL = $d404
 

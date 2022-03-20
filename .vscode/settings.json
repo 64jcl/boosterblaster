@@ -10,5 +10,6 @@
     "kickassembler.emulatorOptions": "-moncommand main.vs",
     "kickassembler.debuggerOptions": "-moncommand main.vs",
     "kickassembler.startup": "main.asm",
-    "kickassembler.fileTypesBinary": "bin"
+    "kickassembler.fileTypesBinary": "bin",
+    "vetur.format.options.tabSize": 4
 }
