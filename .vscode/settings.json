@@ -7,8 +7,8 @@
         "lib"
     ],
     "kickassembler.javaRuntime": "C:\\Program Files\\Java\\jre1.8.0_201\\bin\\java.exe",
-    "kickassembler.emulatorOptions": "-moncommand main.vs -moncommand breakpoints.txt",
-    "kickassembler.debuggerOptions": "-moncommand main.vs -moncommand breakpoints.txt",
+    "kickassembler.emulatorOptions": "-moncommand main.vs",
+    "kickassembler.debuggerOptions": "-moncommand main.vs",
     "kickassembler.startup": "main.asm",
     "kickassembler.fileTypesBinary": "bin"
 }

@@ -121,7 +121,7 @@ loop:
 !:	jsr readJoystickButton
 	bcc !-
 	jsr drawGameScreen
-	jsr playGame
+	jsr playGameLoop
 	jsr drawGameOver
 !:	jsr readJoystickButton
 	bcc !-
@@ -152,7 +152,7 @@ initGraphics: {
 //-----------------------------------------------------------------------------------
 drawScreenColours: {
 	ldx #0
-loop:	
+loop:
 	ldy SCREEN,x
 	lda attribs,y
 	sta VIC.COLOUR_RAM,x
@@ -183,6 +183,7 @@ drawIntroScreen: {
 //-----------------------------------------------------------------------------------
 // Prints on the screen directly
 //-----------------------------------------------------------------------------------
+// ASSIGNMENT!
 printText: {
 	stx src
 	sta src+1
@@ -328,7 +329,7 @@ starty: .byte 251,0,5,10,15,20,25,30
 
 // The main loop where the game playing code is run.
 //-----------------------------------------------------------------------------------
-playGame: {
+playGameLoop: {
 	inc tick	// a frame counter used for e.g. animation
 
 	lda #250		// wait for screen raster to reach line 250 (at the bottom border)
@@ -337,6 +338,7 @@ playGame: {
 	
 	ldx cntdown
 	beq action
+
 	dex
 	stx cntdown
 	beq ready
@@ -347,7 +349,8 @@ playGame: {
 	lsr
 	and #1
 	sta VIC.SPRITE_ENABLE
-	jmp playGame
+	jmp playGameLoop
+
 ready:
 	lda #255
 	sta VIC.SPRITE_ENABLE
@@ -355,6 +358,26 @@ ready:
 action:
 	jsr updateSfx
 
+	jsr readInput
+
+	//inc VIC.BORDER
+	jsr moveAndDrawBullets
+	jsr moveEnemies
+	jsr checkBulletCollision
+	jsr checkPlayerCollision
+	bcs exit // check will return C = 1 when game over
+	//dec VIC.BORDER	
+	
+	jmp playGameLoop // loop until game over
+exit:
+	
+	rts
+}
+
+// Read the joystick on CIA1's Port A and move ship right or left or fire a bullet.
+//-----------------------------------------------------------------------------------
+// ASSIGNMENT!
+readInput: {
 	lda CIA1.PORTA
 	bit JOY_LEFT
 	bne checkRight
@@ -364,8 +387,7 @@ action:
 	dex
 	dex
 	stx VIC.SPRITE0_XPOS
-	jmp checkButton
-	
+	jmp checkButton	
 checkRight:
 	bit JOY_RIGHT
 	bne checkButton
@@ -384,19 +406,7 @@ checkButton:
 	lda #FIRE_RATE
 	sta fire_timer  // restore fire timer
 	jsr addBullet
-
 noButton:
-	//inc VIC.BORDER
-	jsr moveAndDrawBullets
-	jsr moveEnemies
-	jsr checkBulletCollision
-	jsr checkPlayerCollision
-	bcs exit // check will return C = 1 when game over
-	//dec VIC.BORDER	
-	
-	jmp playGame // loop until game over
-exit:
-	
 	rts
 }
 
@@ -465,6 +475,7 @@ skip:
 
 // Move all enemies down the screen and animate between their two frames.
 //-----------------------------------------------------------------------------------
+// ASSIGNMENT!
 moveEnemies: {
 	ldy #7
 	ldx #14
@@ -474,11 +485,12 @@ loop:
 	jsr getNewEnemyX
 	sta VIC.SPRITE0_XPOS,x
 nonew:
+
 	// animate enemy
 	lda tick
 	lsr
 	lsr
-	lsr
+	lsr // divide by 8
 	and #1
 	clc
 	adc #SPRITE_ENEMY
@@ -531,6 +543,7 @@ exit:
 // Check if player sprite hit an enemy sprite.
 // We also return C = 0 if not hit as a game over flag.
 //-----------------------------------------------------------------------------------
+// ASSIGNMENT?
 checkPlayerCollision: {
 	lda VIC.SPRITE_SPRITE_COLLISION
 	and #1
@@ -565,6 +578,7 @@ over:
 
 // Will add the score in A (0-9) to the score chars on the screen
 //-----------------------------------------------------------------------------------
+// ASSIGNMENT!
 addScore: {
 	ldx #6
 loop:
@@ -632,11 +646,11 @@ noEor:	sta seed
 
 sidchannel: .byte 0,7,14
 
-sfx_wave:.byte $20,$80
-sfx_ad:  .byte $0f,$0f
-sfx_sr:  .byte $ff,$ff
-sfx_freq:.byte 40 ,10
-sfx_dec: .byte  4 ,1
+sfx_wave: .byte $20, $80
+sfx_ad:   .byte $0f, $0f
+sfx_sr:   .byte $ff, $ff
+sfx_freq: .byte 40 , 10
+sfx_dec:  .byte  4 , 1
 
 freq:.byte 0,0
 
