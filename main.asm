@@ -1,5 +1,5 @@
 
-// Written for the BOOSTER Conference Bergen 2020 
+// Written for the BOOSTER Conference Bergen 2022
 // by John Christian Lønningdal and Ricki Sickenger
 
 // Adds a short basic program that adds a SYS basic command to the main code
@@ -52,6 +52,12 @@ dst: .word 0 // a destination word pointer so we can use indirect adressing
 .const SPRITE6_POINTER = SPRITE0_POINTER+6
 .const SPRITE7_POINTER = SPRITE0_POINTER+7
 
+// some constants to the bits on the joystick port
+.const JOY_BUTTON = %00010000
+.const JOY_UP     = %00000001
+.const JOY_DOWN   = %00000010
+.const JOY_LEFT   = %00000100
+.const JOY_RIGHT  = %00001000
 
 // some constants just in case we need to adjust charset etc.
 // makes it much easier to adjust things to tweak game
@@ -91,20 +97,17 @@ gameOver:
 scrptr_lo:	.fill 25,<[SCREEN+[i*40]] // lo pointer (<)
 scrptr_hi:	.fill 25,>[SCREEN+[i*40]] // hi pointer (>)
 
-// some joystick bit positions we can use the bit opcode to check directions and button
-JOY_BUTTON: .byte %00010000
-JOY_UP:		.byte %00000001
-JOY_DOWN:   .byte %00000010
-JOY_LEFT:   .byte %00000100
-JOY_RIGHT:  .byte %00001000
-
-fire_timer: .byte 0              // a timer that we count down to zero for each fire
+fire_timer: .byte FIRE_RATE      // a timer that we count down to zero for each fire
 cur_bullet: .byte 0              // position of the bullet to add to table
 bullets_x:  .fill MAX_BULLETS,0  // x position of bullet
 bullets_y:  .fill MAX_BULLETS,-1 // y position of bullet (-1 means not active)
 
-// colours of the enemies
-mobcols: .byte GREEN,LIGHT_GREEN,RED,LIGHT_RED,BLUE,LIGHT_BLUE,ORANGE
+// colours of the player ship and each of the enemies
+mobcols: .byte GREY, GREEN,LIGHT_GREEN,RED,LIGHT_RED,BLUE,LIGHT_BLUE,ORANGE
+
+// init y position for each sprite on screen
+moby:    .byte 217, 0,5,10,15,20,25,30
+
 
 tick:	.byte 0 // a frame counter
 cntdown: .byte 0 // a countdown on game start or life lost
@@ -120,7 +123,7 @@ lives:	.byte 0 // number of lives
 //-----------------------------------------------------------------------------------
 main: {
     //sei
-    jsr initGraphics
+    jsr initGraphicsAndSound
 loop:
     jsr drawIntroScreen
 waitForButton:	
@@ -137,7 +140,7 @@ waitAgainForButton:
 
 // Set border and background colour and switch VIC-II to a custom character set and screen
 //-----------------------------------------------------------------------------------
-initGraphics: {
+initGraphicsAndSound: {
     lda #DARK_GREY
     sta VIC.BORDER
     lda #BLACK
@@ -148,6 +151,9 @@ initGraphics: {
     sta VIC.SCREEN_CHARSET_PTR
     
     jsr drawScreenColours
+
+    lda #15
+    sta SID.VOLUME_MODE
     rts
 }
 
@@ -185,20 +191,20 @@ drawIntroScreen: {
     rts
 }
 
-//-----------------------------------------------------------------------------------
-// Prints the text PRESS BUTTON TO START in the middle of the game area
+//===================================================================================
 // ASSIGNMENT 1
-//-----------------------------------------------------------------------------------
+// Prints PRESS BUTTON TO START in the middle of the game area (row 12, column 5)
+//===================================================================================
 printPressButton: {
-    ldx #0
+    ldx #0                   // init X index to zero
 loop:
-    lda pressButton,x
-    beq end
-    sta SCREEN+(12*40)+5,x
-    inx
-    jmp loop
+    lda pressButton,x        // load char from string (absolute indexed by X)
+    beq end                  // if its zero the string is ended
+    sta SCREEN+(12*40)+5,x   // print char to screen at row 12 and starting at column 5
+    inx                      // increase X index by one
+    jmp loop                 // jump to loop for another character
 end:
-    rts
+    rts                      // return from subroutine
 }
 
 // Read the joystick button.
@@ -206,21 +212,20 @@ end:
 //-----------------------------------------------------------------------------------
 arm: .byte 0
 readJoystickButton: {
-    lda CIA1.PORTA
-    ldx arm
-    bne release	
-    bit JOY_BUTTON
-    bne exit	
-    inc arm
+    lda CIA1.PORTA  // read Joystick Port 2 (note that a 0 value means a switch on joystick is down)
+    ldx arm         // check if already armed (down)
+    bne release	    // if so check for release
+    and #JOY_BUTTON // otherwise and with button bit to check if its set
+    bne exit	    // if not exit
+    inc arm         // otherwise we set arm state
 exit:
-    clc
+    clc             // clear carry means button is not yet pressed and released
     rts
 release:	
-    bit JOY_BUTTON
-    beq exit
-    lda #0
-    sta arm
-    sec
+    and #JOY_BUTTON // and with button bit to check if its set 
+    beq exit        // if not exit
+    dec arm         // clear out arm state
+    sec             // set carry means button has been pressed and released
     rts
 }
 
@@ -269,16 +274,12 @@ sloop:
     dey
     bpl sloop
     
-    lda #1 // only player is multicolour
+    lda #1  // only player is multicolour (enemies are high res)
     sta VIC.SPRITE_MULTICOLOUR
-    lda #GREY
-    sta VIC.SPRITE0_COLOUR
     lda #DARK_GREY
-    sta VIC.SPRITE_COLOUR1
+    sta VIC.SPRITE_COLOUR1 // multi colour 1
     lda #LIGHT_GREY
-    sta VIC.SPRITE_COLOUR2
-    lda #SPRITE_PLAYER
-    sta SPRITE0_POINTER
+    sta VIC.SPRITE_COLOUR2 // multi colour 2
     
     jmp initGame
 }
@@ -286,44 +287,43 @@ sloop:
 // Initialize a new game. Also called every time you loose a life to restart.
 //-----------------------------------------------------------------------------------
 initGame: {
-    lda #0
-    sta SID.VOLUME_MODE
+    //lda #0
+    //sta SID.VOLUME_MODE
 
     lda #COUNTDOWN_TIME
     sta cntdown
-
-    lda #1 // enable only player sprite first
-    sta VIC.SPRITE_ENABLE
-    lda #130
-    sta VIC.SPRITE0_XPOS
-    lda #217
-    sta VIC.SPRITE0_YPOS
     
+    // set sprite indexes and their Y position by copying from moby table and colour from mobcols
     ldx #7
     ldy #14
 more:
     lda #SPRITE_ENEMY
-    sta SPRITE0_POINTER,x
+    sta SPRITE0_POINTER,x     // all sprites set to enemy
     jsr getNewEnemyX
-    sta VIC.SPRITE0_XPOS,y
-    lda starty-1,x
-    sta VIC.SPRITE0_YPOS,y // x/y are staggered so need its own index!
-    lda mobcols-1,x
+    sta VIC.SPRITE0_XPOS,y    // get a random X position
+    lda moby,x
+    sta VIC.SPRITE0_YPOS,y    // x/y are staggered so need its own index!
+    lda mobcols,x
     sta VIC.SPRITE0_COLOUR,x
     dey
     dey
     dex
-    bne more
+    bpl more // until X index i 255 (-1)
     
+    lda #SPRITE_PLAYER
+    sta SPRITE0_POINTER    // set sprite 0 to player sprite
+    lda #1                 
+    sta VIC.SPRITE_ENABLE  // enable only player sprite first 
+    lda #130
+    sta VIC.SPRITE0_XPOS   // set ship start X position
+
     rts
 }
-
-starty: .byte 251,0,5,10,15,20,25,30  // init y position for each sprite on screen
 
 // The main loop where the game playing code is run.
 //-----------------------------------------------------------------------------------
 playGameLoop: {
-    inc tick	// a frame counter used for e.g. animation
+    inc tick	    // a frame counter used for e.g. animation
 
     lda #250		// wait for screen raster to reach line 250 (at the bottom border)
 !:	cmp VIC.RASTER	// this will effectly make our game logic run 50 times a second (PAL)
@@ -339,94 +339,94 @@ playGameLoop: {
     lsr
     lsr
     lsr
-    lsr
-    and #1
+    lsr      // divide cntdown value by 4
+    and #1   // and that with 1 so that value toggles between 0 and 1 for blinking ship
     sta VIC.SPRITE_ENABLE
+    jsr updateSfx
     jmp playGameLoop
 
 ready:
     lda #255
-    sta VIC.SPRITE_ENABLE
+    sta VIC.SPRITE_ENABLE  // turn on all sprites so that enemies will also be visible
     
 action:
     jsr updateSfx
-
     jsr readInput
-
-    //inc VIC.BORDER
     jsr moveAndDrawBullets
     jsr moveEnemies
     jsr checkBulletCollision
     jsr checkPlayerCollision
-    bcs exit // check will return C = 1 when game over
-    //dec VIC.BORDER	
-    
-    jmp playGameLoop // loop until game over
+    bcs exit          // check will return C = 1 when game over    
+    jmp playGameLoop  // loop until game over
 exit:
     
     rts
 }
 
+//===================================================================================
+// ASSIGNMENT 2
 // Read the joystick on CIA1's Port A and move ship right or left or fire a bullet.
-//-----------------------------------------------------------------------------------
-// ASSIGNMENT!
+// We also constrain movement of ship so it can only move between X values 26 and 240.
+// For firing bullets we use a fire_timer that should be counted down until its zero.
+// When this happens, call the function addBullet and reset timer.
+//===================================================================================
 readInput: {
-    lda CIA1.PORTA
-    bit JOY_LEFT
-    bne checkRight
-    ldx VIC.SPRITE0_XPOS
-    cpx #26		// check if we can move further to the left
-    bcc checkButton
+    ldy CIA1.PORTA        // read joystick port 2 (note that zero bits means they switches are connected)
+    tya                   // transfer value to A for and operation
+    and #JOY_LEFT         // check joystick left (if A is 0 after and)
+    bne checkRight        // if not we check right
+    ldx VIC.SPRITE0_XPOS  // get sprite 0 x position (ship)
+    cpx #26		          // check if x is 26 (left edge of game area)
+    bcc checkButton       // when carry is clear it means it is equal or lower than 26
     dex
-    dex
-    stx VIC.SPRITE0_XPOS
-    jmp checkButton	
+    dex                   // we move ship two pixels left to make it a bit faster
+    stx VIC.SPRITE0_XPOS  // set new sprite 0 x position
+    jmp checkButton	      // then check button (no need to check right)
 checkRight:
-    bit JOY_RIGHT
-    bne checkButton
-    ldx VIC.SPRITE0_XPOS
-    cpx #240		// check if we can move further to the right
-    bcs checkButton
+    tya                   // transfer Y to A as we kept joystick port reading there
+    and #JOY_RIGHT        // check joystick right (if A is 0 after and)
+    bne checkButton       // if not we check button
+    ldx VIC.SPRITE0_XPOS  // get sprite 0 x position (ship)
+    cpx #240		      // check if x is 240 (right edge of game area)
+    bcs checkButton       // when carry is set it means its above 240
     inx
-    inx
-    stx VIC.SPRITE0_XPOS
+    inx                   // we move ship two pixels right to make it a bit faster
+    stx VIC.SPRITE0_XPOS  // set new sprite 0 x position
 checkButton:
-    //lda CIA1.PORTA // we read value again as we have likely clobbered A register
-    bit JOY_BUTTON
-    bne noButton
-    dec fire_timer  // count down fire timer
-    bpl noButton
-    lda #FIRE_RATE
-    sta fire_timer  // restore fire timer
-    jsr addBullet
+    tya                   // transfer Y to A as we kept joystick port reading there
+    and #JOY_BUTTON       // check if button bit is clear
+    bne noButton          // if not we exit
+    dec fire_timer        // if joystick button was down we count down the fire timer
+    bne noButton          // if fire_timer is not zero yet we exit (need to count more)
+    lda #FIRE_RATE        // otherwise we load the rate value 
+    sta fire_timer        // and store in fire timer for another round
+    jsr addBullet         // add bullet
 noButton:
     rts
 }
 
-// Add a bullet to the bullets tables
+// Add a bullet to the bullet x,y tables
 //-----------------------------------------------------------------------------------
 addBullet: {
     ldx cur_bullet
     
     lda VIC.SPRITE0_XPOS // get player x position directly from sprite xpos
     sec
-    sbc #24-10 // subtract left border area + approx half sprite
+    sbc #24-10      // subtract left border area + approx half sprite
     lsr
     lsr
-    lsr // divide by 8
-    sta bullets_x,x // set x char position
-    
+    lsr             // 3 x lsr => divide by 8 to find char column
+    sta bullets_x,x // set x char column
     lda #21
-    sta bullets_y,x // set y char position
-    
+    sta bullets_y,x // set y char row    
     inx
     cpx #MAX_BULLETS
     bne exit
     ldx #0
 exit:
     stx cur_bullet
-    ldx #0 // shoot sfx
-    jsr playSfx
+    ldx #0             
+    jsr playSfx    // play shoot sfx
     rts
 }
 
@@ -445,21 +445,21 @@ moveAndDrawBullets: {
     ldx #MAX_BULLETS-1
 loop:
     ldy bullets_y,x
-    bmi skip		// if y position = 0 we just skip this bullet
+    bmi skip		 // if y position = 0 we just skip this bullet
 here:
     :SetScreenDst()	
     lda #0
-    ldy bullets_x,x	// get the x position
-    sta (dst),y	// clear the bullet
+    ldy bullets_x,x	 // get the x position
+    sta (dst),y	     // clear the bullet
     ldy bullets_y,x
     dey
     tya
-    sta bullets_y,x // move bullet one char up
+    sta bullets_y,x  // move bullet one char up
     bmi skip
     :SetScreenDst()
-    ldy bullets_x,x	// get the x position
+    ldy bullets_x,x  // get the x position
     lda #CHAR_BULLET
-    sta (dst),y	// draw the bullet
+    sta (dst),y	     // draw the bullet
 skip:
     dex
     bpl loop
@@ -549,6 +549,9 @@ exit:
 // We lost a life, decrease number of lives and if game over we set C = 1
 //-----------------------------------------------------------------------------------
 lostLife: {
+    //ldx #2  // ship explosion sfx
+    //jsr playSfx    
+
     lda #0
     sta VIC.SPRITE_ENABLE // hide all sprites
     ldx lives
@@ -602,10 +605,10 @@ drawGameOver: {
     rts
 }
 
-//-----------------------------------------------------------------------------------
-// Prints GAME OVER in the middle of the screen
+//===================================================================================
 // ASSIGNMENT 1
-//-----------------------------------------------------------------------------------
+// Prints GAME OVER in the middle of the screen (row 12, column 10)
+//===================================================================================
 printGameOver: {
     ldx #0
 loop:
@@ -652,23 +655,19 @@ noEor:	sta seed
 // Some variables used by the sfx routine to set SID registers
 //-----------------------------------------------------------------------------------
 
-sidchannel: .byte 0,7,14    // IO offsets to each SID sound channel
+sidchannel: .byte 0,7,14      // IO offsets to each SID sound channel
+freq:       .byte 0,0,0       // current frequency per channel (SID IO is write only, so we need to store these)
 
-sfx_wave: .byte $20, $80    // wave of sound ($10 = Triangle, $20 = Sawtooth, $40 = Pulse, $80 = Noise)
-sfx_ad:   .byte $0f, $0f    // attack decay
-sfx_sr:   .byte $ff, $ff    // sustain release
-sfx_freq: .byte 40 , 10     // frequency hi byte (note these can be max 127 due to nature of code)
-sfx_op:   .byte -4 , -1     // modify freqency per frame
-
-freq:     .byte 0,0,0       // current frequency per channel (SID IO is write only, so we need to store these)
+sfx_wave: .byte $20, $80, $80 // wave of sound ($10 = Triangle, $20 = Sawtooth, $40 = Pulse, $80 = Noise)
+sfx_ad:   .byte $0f, $0f, $0f // attack decay
+sfx_sr:   .byte $ff, $ff, $42 // sustain release
+sfx_freq: .byte 40,  20,  10  // frequency hi byte (note these can be max 127 due to nature of code)
+sfx_op:   .byte -4,  -2,  -1  // modify freqency per frame
 
 //-----------------------------------------------------------------------------------
 // Play a sound effect. Pass sfx to play in X register (also used as channel now)
 //-----------------------------------------------------------------------------------
 playSfx: {
-    lda #15
-    sta SID.VOLUME_MODE
-
     ldy sidchannel,x // get offset to which channel registers to set
     
     lda sfx_ad,x
@@ -687,10 +686,10 @@ playSfx: {
 }
 
 //-----------------------------------------------------------------------------------
-// Every screen frame we update the sound effect to control frequency of note
+// Every screen frame we update the each channel to control frequency of notes
 //-----------------------------------------------------------------------------------
 updateSfx: {
-    ldx #1
+    ldx #2    
 loop:
     ldy sidchannel,x
     lda freq,x
@@ -703,7 +702,7 @@ notminus:
     sta freq,x
     sta SID.FREQUENCY_HI,y
     lda sfx_wave,x
-    sta SID.CONTROL,y // turn off gate bit (trigger decay)
+    sta SID.CONTROL,y // turn off gate bit (trigger release)
 next:
     dex
     bpl loop
