@@ -2,10 +2,11 @@
 // Written for the BOOSTER Conference Bergen 2022
 // by John Christian Lønningdal and Ricki Sickenger
 
-// Adds a short basic program that adds a SYS basic command to the main code
+// Adds a short basic program that adds a SYS basic command to the main code address
+// All C64 prg files are loaded at address $0801 (start of basic) hence the first
+// bytes of the binary will be this short basic program to call the assembly code.
 //-----------------------------------------------------------------------------------
 :BasicUpstart2(main)
-
 
 // We can split up code in several files and import them as needed.
 // Remember these can contain code so you need to import them where you
@@ -17,21 +18,22 @@
 .import source "lib/io.asm"
 .import source "lib/kernal.asm"
 
-
 // Zero page is used frequently for faster code and indirect adressing ( e.g. lda ($fb),y )
+// Here we just place these at the 4 unused bytes at the end of zero page but if basic/kernal
+// is not used everything besides the first 2 bytes of zero page can be used freely.
 //-----------------------------------------------------------------------------------
-.pc = $fc "Zeropage" virtual
+.pc = ZP.UNUSED "Zeropage" virtual
 
 src: .word 0 // a source word pointer so we can use indirect adressing
 dst: .word 0 // a destination word pointer so we can use indirect adressing
 
-// We load a screen into address 2000
+// We load a screen into address $2800
 //-----------------------------------------------------------------------------------
-.const SCREEN = $2800 // define a constant we can use later
+.const SCREEN = $2800 // define a constant we can use later in code
 .pc = SCREEN "Screen"
 .import binary "res/screen.bin"
 
-// We load a custom charset into address 3000
+// We load a custom charset into address $3000
 //-----------------------------------------------------------------------------------
 .pc = $3000 "Charset"
 .import binary "res/chars.bin"
@@ -52,13 +54,6 @@ dst: .word 0 // a destination word pointer so we can use indirect adressing
 .const SPRITE6_POINTER = SPRITE0_POINTER+6
 .const SPRITE7_POINTER = SPRITE0_POINTER+7
 
-// some constants to the bits on the joystick port
-.const JOY_BUTTON = %00010000
-.const JOY_UP     = %00000001
-.const JOY_DOWN   = %00000010
-.const JOY_LEFT   = %00000100
-.const JOY_RIGHT  = %00001000
-
 // some constants just in case we need to adjust charset etc.
 // makes it much easier to adjust things to tweak game
 
@@ -75,6 +70,7 @@ dst: .word 0 // a destination word pointer so we can use indirect adressing
 .const SCREEN_SCORE  = SCREEN+[12*40]+32
 .const SCREEN_LIVES  = SCREEN+[18*40]+33
 
+// number of frames (2 seconds) to countdown on start and when life lost
 .const COUNTDOWN_TIME = 100
 
 // Data can reside anywhere, even between the code, but its often wise to put them
@@ -86,10 +82,12 @@ dst: .word 0 // a destination word pointer so we can use indirect adressing
 attribs:	.import binary "res/attribs.bin"
 
 // some texts we want to print on the screen (ASSIGNMENT 1)
-pressButton:	
+// note that lower case chars are char indexes from 0 and up (a = 1)
+// while upper cases will be 64 char indexes higher (A = 65)
+pressButton:
     .text "press button to play"
     .byte 0 // zero terminating string
-gameOver:	
+gameOver:
     .text "game over"
     .byte 0 // zero terminating string
 
@@ -105,36 +103,39 @@ bullets_y:  .fill MAX_BULLETS,-1 // y position of bullet (-1 means not active)
 // colours of the player ship and each of the enemies
 mobcols: .byte GREY, GREEN,LIGHT_GREEN,RED,LIGHT_RED,BLUE,LIGHT_BLUE,ORANGE
 
-// init y position for each sprite on screen
+// init y position for each sprite on screen when game starts
 moby:    .byte 217, 0,5,10,15,20,25,30
 
-
-tick:	.byte 0 // a frame counter
+tick:    .byte 0 // a frame counter
 cntdown: .byte 0 // a countdown on game start or life lost
-lives:	.byte 0 // number of lives
+lives:   .byte 0 // number of lives
 
-.pc = $1000 "Main"
-// The code can also reside anywhere in memory. This is the main entry part which
+//-----------------------------------------------------------------------------------
+// Code can reside anywhere in memory. This is the main entry part which
 // our generated basic program with a SYS command will call.
 // Our main function contains the screen init and the main loop with a simple state 
 // machine where it waits for a joystick button to start game. It then draws the
 // game screen and jumps to a the game loop. When that returns it will draw game over
 // and wait for joystick press to go back to the top.
 //-----------------------------------------------------------------------------------
+.pc = $1000 "Main"
 main: {
-    //sei
     jsr initGraphicsAndSound
 loop:
     jsr drawIntroScreen
+
 waitForButton:	
     jsr readJoystickButton
     bcc waitForButton
+
     jsr drawGameScreen
     jsr playGameLoop
     jsr drawGameOver
+
 waitAgainForButton:	
-    jsr readJoystickButton
+    jsr readJoystickButton    
     bcc waitAgainForButton
+
     jmp loop	
 }
 
@@ -147,6 +148,8 @@ initGraphicsAndSound: {
     sta VIC.BACKGROUND
 
     // set up the VIC-II so it points to our custom charset + screen
+    // note that by default the C64 VIC-II points to bank 0 which is $0000-$3999
+    // so there is no need to switch the bank as our screen/charset/sprites is there
     lda #SCR_2800+CHAR_3000
     sta VIC.SCREEN_CHARSET_PTR
     
@@ -287,9 +290,6 @@ sloop:
 // Initialize a new game. Also called every time you loose a life to restart.
 //-----------------------------------------------------------------------------------
 initGame: {
-    //lda #0
-    //sta SID.VOLUME_MODE
-
     lda #COUNTDOWN_TIME
     sta cntdown
     
@@ -299,8 +299,8 @@ initGame: {
 more:
     lda #SPRITE_ENEMY
     sta SPRITE0_POINTER,x     // all sprites set to enemy
-    jsr getNewEnemyX
-    sta VIC.SPRITE0_XPOS,y    // get a random X position
+    jsr getRandomX
+    sta VIC.SPRITE0_XPOS,y    // get a random X position and set that for sprite
     lda moby,x
     sta VIC.SPRITE0_YPOS,y    // x/y are staggered so need its own index!
     lda mobcols,x
@@ -308,12 +308,13 @@ more:
     dey
     dey
     dex
-    bpl more // until X index i 255 (-1)
+    bpl more // until X index i 255 (-1) - so this means we also set ship sprite values too
     
+    // we need to write some ship sprite values as only colour and X position is correct from the loop above 
     lda #SPRITE_PLAYER
-    sta SPRITE0_POINTER    // set sprite 0 to player sprite
+    sta SPRITE0_POINTER    // set sprite 0 to ship sprite
     lda #1                 
-    sta VIC.SPRITE_ENABLE  // enable only player sprite first 
+    sta VIC.SPRITE_ENABLE  // enable only ship sprite first 
     lda #130
     sta VIC.SPRITE0_XPOS   // set ship start X position
 
@@ -330,17 +331,16 @@ playGameLoop: {
     bne !-			// this is the brute force method - normally one would set up a raster irq
     
     ldx cntdown
-    beq action
+    beq action      // if cntdown is zero the gameplay is active
 
     dex
-    stx cntdown
-    beq ready
-    txa
+    stx cntdown     // if not we decrease countdown and store it
+    beq ready       // when it reaches zero we jump to ready (enabling enemy sprites)
+    txa             // transfer X to A as shift operations can only be done on A
     lsr
     lsr
-    lsr
-    lsr      // divide cntdown value by 4
-    and #1   // and that with 1 so that value toggles between 0 and 1 for blinking ship
+    lsr              // divide cntdown value by 8
+    and #1           // and that with 1 so that value toggles between 0 and 1 for blinking ship
     sta VIC.SPRITE_ENABLE
     jsr updateSfx
     jmp playGameLoop
@@ -353,7 +353,7 @@ action:
     jsr updateSfx
     jsr readInput
     jsr moveAndDrawBullets
-    jsr moveEnemies
+    jsr moveAnimateEnemies
     jsr checkBulletCollision
     jsr checkPlayerCollision
     bcs exit          // check will return C = 1 when game over    
@@ -368,7 +368,8 @@ exit:
 // Read the joystick on CIA1's Port A and move ship right or left or fire a bullet.
 // We also constrain movement of ship so it can only move between X values 26 and 240.
 // For firing bullets we use a fire_timer that should be counted down until its zero.
-// When this happens, call the function addBullet and reset timer.
+// When this happens, call the function addBullet and reset the timer.
+// Remember that the joystick ports have zero bit value for any switch that is active!
 //===================================================================================
 readInput: {
     ldy CIA1.PORTA        // read joystick port 2 (note that zero bits means they switches are connected)
@@ -431,6 +432,9 @@ exit:
 }
 
 // A simple macro that assumes line we want to set dst to is in Y register
+// This is just to demonstrate that a macro can be used to inline code wherever you want.
+// This is often done to speed up as a jsr/rts costs a bit of CPU time so its common
+// to optimize an expensive loop like our moveAndDrawBullets with inline code
 //-----------------------------------------------------------------------------------
 .macro SetScreenDst() {
     lda scrptr_lo,y
@@ -442,12 +446,12 @@ exit:
 // First clears out bullets last position, move it up one character, and then draws it again.
 //-----------------------------------------------------------------------------------
 moveAndDrawBullets: {
+    //inc VIC.BORDER // uncomment this to measure time visually to see how much raster time a routine takes
     ldx #MAX_BULLETS-1
 loop:
     ldy bullets_y,x
     bmi skip		 // if y position = 0 we just skip this bullet
-here:
-    :SetScreenDst()	
+    :SetScreenDst()
     lda #0
     ldy bullets_x,x	 // get the x position
     sta (dst),y	     // clear the bullet
@@ -463,36 +467,46 @@ here:
 skip:
     dex
     bpl loop
+    //dec VIC.BORDER // uncomment this to measure time visually to see how much raster time a routine takes
     rts
 }
 
+//===================================================================================
+// ASSIGNMENT 3
 // Move all enemies down the screen and animate between their two frames.
-//-----------------------------------------------------------------------------------
-// ASSIGNMENT!
-moveEnemies: {
-    ldy #7
-    ldx #14
+// Each enemy Y position is stored in VIC.SPRITE0_YPOS, VIC.SPRITE1_YPOS, etc
+// Note that these addresses in the IO are staggered as X is also stored before each
+// As a bonus also check when enemy has reached bottom (or wraps around to Y position 0)
+// and call the function "getRandomX" to get a new X position to adjust it.
+// Finally to make it nicer, animate the sprites by alternating their sprite pointer
+// between #SPRITE_ENEMY and #SPRITE_ENEMY+1. You might want to only change this every
+// 8th frame to make the animation a bit slower. Every refresh in the game loop we
+// count a variable called "tick" up by one, which is useful for this.
+//===================================================================================
+moveAnimateEnemies: {
+    ldy #7                  // Y index used to iterate over 7 enemy sprites
+    ldx #14                 // use X index as sprite number x 2 for easier access to sprite X and Y VIC-II registers
 loop:
-    inc VIC.SPRITE0_YPOS,x
-    bne nonew
-    jsr getNewEnemyX
-    sta VIC.SPRITE0_XPOS,x
+    inc VIC.SPRITE0_YPOS,x  // set Y position of the Y'th sprite using X index as that counted down 2 each loop
+    bne nonew               // check if Y position wrapped to zero, if not skip repositioning of X
+    jsr getRandomX          // if Y was zero we call a subroutine to get a new X position
+    sta VIC.SPRITE0_XPOS,x  // set X position of the Y'th sprite using X index as that counted down 2 each loop
 nonew:
 
     // animate enemy
-    lda tick
+    lda tick                // get tick value (counted up each frame)
+    lsr                     
     lsr
-    lsr
-    lsr // divide by 8
-    and #1
-    clc
-    adc #SPRITE_ENEMY
-    sta SPRITE0_POINTER,y
+    lsr                     // shift value left 3 times to effectively divide it by 8
+    and #1                  // AND the value with 1 so that we end up with 0 or 1 in A
+    clc                     // clear carry so we add zero as carry value in the adc below
+    adc #SPRITE_ENEMY       // add sprite pointer of enemy, A will now be either #SPRITE_ENEMY or #SPRITE_ENEMY+1
+    sta SPRITE0_POINTER,y   // set sprite pointer of the Y'th sprite (here we use Y as pointers are consecutive)
 
     dex
-    dex
-    dey
-    bne loop
+    dex                     // decrease X register by two so that we can use it for X and Y sprite adjustment
+    dey                     // decrease Y register by one
+    bne loop                // if Y is not zero we loop again for next sprite (sprite 0 is your ship and should not be moved!)
     rts
 }
 
@@ -572,25 +586,31 @@ over:
     rts
 }
 
-// Will add the score in A (0-9) to the score chars on the screen
-//-----------------------------------------------------------------------------------
-// ASSIGNMENT!
+//===================================================================================
+// ASSIGNMENT 4
+// Add the score in A (0-9) to the score chars on the screen. To simplify this we
+// only allow the score added to be max 9. The position of the scores leftmost
+// number is at the address SCREEN_SCORE and the score consist of 7 digits.
+// Add the value to the rightmost number, if it overflows the character #'9'+1
+// we can increase the next number to its left. Loop through all from right to left
+// so that overflows spills over from right to left.
+//===================================================================================
 addScore: {
-    ldx #6
+    ldx #6                  // set X to number of digits - 1 (we index 0 to 6)
 loop:
-    clc
-    adc SCREEN_SCORE,x
-    cmp #'9'+1
-    bcc setexit
-    sec
-    sbc #10
-    sta SCREEN_SCORE,x
-    dex
-    beq exit
-    lda #1 // add 1 to next position
-    jmp loop
+    clc                     // clear carry for the adc below
+    adc SCREEN_SCORE,x      // add the value of A to the digit char at the screen offset by X
+    cmp #'9'+1              // compare the value by the char #'9'+1 (so char as if it was 10)
+    bcc setexit             // if it is not equal or above we jump to storing on screen and exiting
+    sec                     // if not we need to subtract the value by 10, first set carry for sbc
+    sbc #10                 // then perform sbc to subtract 10
+    sta SCREEN_SCORE,x      // store this value in the current screen position
+    dex                     // decrease X by one (our screen digit index)
+    beq exit                // if its zero we are finished
+    lda #1                  // set A to 1 as that is what we add to the next digit when it overflowed
+    jmp loop                // jump to loop for another digit
 setexit:
-    sta SCREEN_SCORE,x
+    sta SCREEN_SCORE,x      // store digit in current screen position (used when there was no overflow)
 exit:
     rts
 }
@@ -622,14 +642,17 @@ end:
 }
 
 // Get a random X position for enemy entry at top
+// Note that this is a very inefficient way to get this and can be improved
+// by perhaps making a table of random values between the two boundaries and just
+// return the next one from that table.
 //-----------------------------------------------------------------------------------
-getNewEnemyX: {
+getRandomX: {
 again:
     jsr getrnd
     cmp #210	 
-    bcs again // if number is above right side we try again
+    bcs again  // if number is above right side of game area we try again
     clc
-    adc #26 // add left border and some
+    adc #26   // add left border and some to get X position visible in game area
     rts
 }
 
@@ -657,6 +680,7 @@ noEor:	sta seed
 
 sidchannel: .byte 0,7,14      // IO offsets to each SID sound channel
 freq:       .byte 0,0,0       // current frequency per channel (SID IO is write only, so we need to store these)
+
 
 sfx_wave: .byte $20, $80, $80 // wave of sound ($10 = Triangle, $20 = Sawtooth, $40 = Pulse, $80 = Noise)
 sfx_ad:   .byte $0f, $0f, $0f // attack decay

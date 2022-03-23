@@ -1,5 +1,5 @@
 
-// Written by John Christian Lønningdal - 2020
+// Written by John Christian Lønningdal - 2022
 
 //-----------------------------------------------------------------------------------
 // The Commodore IO resides in the memory area $d000-$dfff (4kb)
@@ -11,7 +11,7 @@
 // Any extra special hardware like a REU (Ram Expansion) connected to the machine 
 // would often map into the free areas of the IO range.
 //
-// A note about the VIC-II:
+// Some notes about the VIC-II:
 // Since the screen contains more than 256 pixels in both with and height there are
 // some registers that also have a 9th bit stored in another register.
 // For sprites this only affects the X position where the highest bit for each
@@ -94,6 +94,13 @@
 .const CTRL2_40COLS         = %00001000 // bit 3 set
 .const CTRL2_HIGHRES_AND    = %11101111 // bit 4 cleared
 .const CTRL2_MULTICOLOUR    = %00010000 // bit 4 set
+
+// some constants to the bits on the joystick port
+.const JOY_BUTTON = %00010000
+.const JOY_UP     = %00000001
+.const JOY_DOWN   = %00000010
+.const JOY_LEFT   = %00000100
+.const JOY_RIGHT  = %00001000
 
 // Convenience macro for loading a value, AND with flag, then store it again
 //-----------------------------------------------------------------------------------

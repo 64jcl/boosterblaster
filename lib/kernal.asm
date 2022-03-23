@@ -1,5 +1,5 @@
 
-// Written by John Christian Lønningdal - 2020
+// Written by John Christian Lønningdal - 2022
 
 //-----------------------------------------------------------------------------------
 // The Commodore KERNAL (yes spelled with an A) is a ROM containing large portions of

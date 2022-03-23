@@ -1,5 +1,5 @@
 
-// Written by John Christian Lønningdal - 2020
+// Written by John Christian Lønningdal - 2022
 
 //-----------------------------------------------------------------------------------
 // The Zero page is the first page of 256 bytes in the machine and is an important
@@ -48,4 +48,8 @@
     // Bit #5: Datasette motor control; 0 = On; 1 = Off.
     .label CPU_PORT = $01
 
+    // have not added any labels for the rest as its mostly used by basic/kernal
+
+    // the area $fc-$ff are unused and can safely be used by programs even with basic/kernal active
+    .label UNUSED = $fc
 }
