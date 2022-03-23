@@ -1,5 +1,4 @@
 
-
 //-------------------------------------------------------------------------------
 // A 6502 instruction consist of the OPCODE and an optional VALUE that is either
 // 8 bit or 16 bit. Some examples of each length below:
@@ -8,11 +7,51 @@
   lda #1      // 2 bytes
   sta $1000   // 3 bytes
 
+//-------------------------------------------------------------------------------
+// The assembler supports using constants and labels so its easier to code.
+
+.const MAX_LIVES = 3  // define a constant to be used by code anywhere
+lives:  .byte 0       // a label, in this case with a byte value defined
+
+  lda #MAX_LIVES      // load the immediate value (same as writing "lda #3")
+  sta lives           // store the byte value to the address where lives is
+
+//-------------------------------------------------------------------------------
+// Scope is used in the compiler to allow for local labels
+
+doStuff: {
+  ldx #5
+loop:
+  dex
+  bne loop
+  rts
+}
+
+doMoreStuff: {
+  ldy #10
+loop:
+  dey
+  bne loop
+  rts
+}
+
+//-------------------------------------------------------------------------------
+// Labels can also be unnamed using ! and you can access those with !+ and !-
+
+doStuffAgain: {
+  ldx #5
+!:
+  dex
+  bne !-   // refers backwards to the first ! label it finds
+  rts
+}
+
 
 //-------------------------------------------------------------------------------
 // Load immediate value 5 and store it at address $1000
 // Note that the # on the value is in fact a symbol that indicates the adressing
-// mode of the instruction LDA. 
+// mode of the instruction LDA. An immediate value can only be 0-255 as that is
+// the size of a register.
 
   lda #5      // Opcode: LDA immediate , Value: 5 (the actual value to load A with)
   sta $1000   // Opcode: STA absolute, Value: $1000 (an address to store A to)
@@ -25,7 +64,7 @@
 // of how fast it is (how many CPU clock cycles it takes). For more details about
 // this look at web sites showing the full instruction set including cycle count.
 
-  lda $5      // Opcode: LDA absolute zero page, Value: $5
+  lda $5      // Opcode: LDA absolute zero page, Value: $5 (A = byte at address $5)
   sta $1001   // Opcode: STA absolute, Value: $1001
 
 
