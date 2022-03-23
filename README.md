@@ -51,3 +51,25 @@ Goattracker for SID Music creation: https://csdb.dk/release/?id=152420
 
 Exomizer for compressing program/data for unpacking on C64: https://csdb.dk/release/?id=173655
 
+# Some useful links
+
+An overview of the full 6502 instruction set
+https://www.masswerk.at/6502/6502_instruction_set.html
+
+A full C64 memory map explained
+https://sta.c64.org/cbm64mem.html
+
+A good site about programming for the C64
+https://dustlayer.com
+
+Great resource for code examples for doing almost anything on a C64.
+https://codebase64.org
+
+List of all KERNAL functions
+https://sta.c64.org/cbm64krnfunc.html
+
+Some ripped fonts from misc games and apps
+http://kofler.dot.at/c64/font_02.html
+
+Complete C64 BASIC and KERNAL ROM disassembly
+https://www.pagetable.com/c64disasm/
