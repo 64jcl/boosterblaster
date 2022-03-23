@@ -199,6 +199,14 @@ drawIntroScreen: {
 // Prints PRESS BUTTON TO START in the middle of the game area (row 12, column 5)
 //===================================================================================
 printPressButton: {
+    ldx #0                   // init X index to zero
+loop:
+    lda pressButton,x        // load char from string (absolute indexed by X)
+    beq end                  // if its zero the string is ended
+    sta SCREEN+(12*40)+5,x   // print char to screen at row 12 and starting at column 5
+    inx                      // increase X index by one
+    jmp loop                 // jump to loop for another character
+end:
     rts                      // return from subroutine
 }
 
@@ -364,6 +372,37 @@ exit:
 // Remember that the joystick ports have zero bit value for any switch that is active!
 //===================================================================================
 readInput: {
+    ldy CIA1.PORTA        // read joystick port 2 (note that zero bits means they switches are connected)
+    tya                   // transfer value to A for and operation
+    and #JOY_LEFT         // check joystick left (if A is 0 after and)
+    bne checkRight        // if not we check right
+    ldx VIC.SPRITE0_XPOS  // get sprite 0 x position (ship)
+    cpx #26		          // check if x is 26 (left edge of game area)
+    bcc checkButton       // when carry is clear it means it is equal or lower than 26
+    dex
+    dex                   // we move ship two pixels left to make it a bit faster
+    stx VIC.SPRITE0_XPOS  // set new sprite 0 x position
+    jmp checkButton	      // then check button (no need to check right)
+checkRight:
+    tya                   // transfer Y to A as we kept joystick port reading there
+    and #JOY_RIGHT        // check joystick right (if A is 0 after and)
+    bne checkButton       // if not we check button
+    ldx VIC.SPRITE0_XPOS  // get sprite 0 x position (ship)
+    cpx #240		      // check if x is 240 (right edge of game area)
+    bcs checkButton       // when carry is set it means its above 240
+    inx
+    inx                   // we move ship two pixels right to make it a bit faster
+    stx VIC.SPRITE0_XPOS  // set new sprite 0 x position
+checkButton:
+    tya                   // transfer Y to A as we kept joystick port reading there
+    and #JOY_BUTTON       // check if button bit is clear
+    bne noButton          // if not we exit
+    dec fire_timer        // if joystick button was down we count down the fire timer
+    bne noButton          // if fire_timer is not zero yet we exit (need to count more)
+    lda #FIRE_RATE        // otherwise we load the rate value 
+    sta fire_timer        // and store in fire timer for another round
+    jsr addBullet         // add bullet
+noButton:
     rts
 }
 
@@ -445,6 +484,29 @@ skip:
 // count a variable called "tick" up by one, which is useful for this.
 //===================================================================================
 moveAnimateEnemies: {
+    ldy #7                  // Y index used to iterate over 7 enemy sprites
+    ldx #14                 // use X index as sprite number x 2 for easier access to sprite X and Y VIC-II registers
+loop:
+    inc VIC.SPRITE0_YPOS,x  // set Y position of the Y'th sprite using X index as that counted down 2 each loop
+    bne nonew               // check if Y position wrapped to zero, if not skip repositioning of X
+    jsr getRandomX          // if Y was zero we call a subroutine to get a new X position
+    sta VIC.SPRITE0_XPOS,x  // set X position of the Y'th sprite using X index as that counted down 2 each loop
+nonew:
+
+    // animate enemy
+    lda tick                // get tick value (counted up each frame)
+    lsr                     
+    lsr
+    lsr                     // shift value left 3 times to effectively divide it by 8
+    and #1                  // AND the value with 1 so that we end up with 0 or 1 in A
+    clc                     // clear carry so we add zero as carry value in the adc below
+    adc #SPRITE_ENEMY       // add sprite pointer of enemy, A will now be either #SPRITE_ENEMY or #SPRITE_ENEMY+1
+    sta SPRITE0_POINTER,y   // set sprite pointer of the Y'th sprite (here we use Y as pointers are consecutive)
+
+    dex
+    dex                     // decrease X register by two so that we can use it for X and Y sprite adjustment
+    dey                     // decrease Y register by one
+    bne loop                // if Y is not zero we loop again for next sprite (sprite 0 is your ship and should not be moved!)
     rts
 }
 
@@ -530,6 +592,22 @@ over:
 // so that overflows spills over from right to left.
 //===================================================================================
 addScore: {
+    ldx #6                  // set X to number of digits - 1 (we index 0 to 6)
+loop:
+    clc                     // clear carry for the adc below
+    adc SCREEN_SCORE,x      // add the value of A to the digit char at the screen offset by X
+    cmp #'9'+1              // compare the value by the char #'9'+1 (so char as if it was 10)
+    bcc setexit             // if it is not equal or above we jump to storing on screen and exiting
+    sec                     // if not we need to subtract the value by 10, first set carry for sbc
+    sbc #10                 // then perform sbc to subtract 10
+    sta SCREEN_SCORE,x      // store this value in the current screen position
+    dex                     // decrease X by one (our screen digit index)
+    beq exit                // if its zero we are finished
+    lda #1                  // set A to 1 as that is what we add to the next digit when it overflowed
+    jmp loop                // jump to loop for another digit
+setexit:
+    sta SCREEN_SCORE,x      // store digit in current screen position (used when there was no overflow)
+exit:
     rts
 }
 

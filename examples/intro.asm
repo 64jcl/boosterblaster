@@ -267,7 +267,7 @@ mobType: .byte MONSTER
   and #MONSTER    // AND value with bit mask in constant MONSTER (note the # for immediate!)
                   // The AND operation will also adjust Z flag. Z = 0 if A != 0, Z = 1 if A == 0
   bne killMonster // Since mobType in this example is set to same value as we test this 
-                  // means Z = 1 and the branch is executed
+                  // means Z = 0 and the branch is executed
   //...
 }
 
