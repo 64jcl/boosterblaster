@@ -7,6 +7,7 @@
   lda #1      // 2 bytes
   sta $1000   // 3 bytes
 
+
 //-------------------------------------------------------------------------------
 // The assembler supports using constants and labels so its easier to code.
 
@@ -15,6 +16,7 @@ lives:  .byte 0       // a label, in this case with a byte value defined
 
   lda #MAX_LIVES      // load the immediate value (same as writing "lda #3")
   sta lives           // store the byte value to the address where lives is
+
 
 //-------------------------------------------------------------------------------
 // Scope is used in the compiler to allow for local labels
@@ -35,6 +37,7 @@ loop:
   rts
 }
 
+
 //-------------------------------------------------------------------------------
 // Labels can also be unnamed using ! and you can access those with !+ and !-
 
@@ -45,6 +48,14 @@ doStuffAgain: {
   bne !-   // refers backwards to the first ! label it finds
   rts
 }
+
+
+//-------------------------------------------------------------------------------
+// The compiler also supports importing binary as well as source files
+
+.import source "lib/io.asm"   // import the file io.asm directly into source at this position
+
+.import binary "res/sprites.bin"  // import a binary file into code at this position
 
 
 //-------------------------------------------------------------------------------
