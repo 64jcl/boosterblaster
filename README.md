@@ -1,6 +1,6 @@
 # boosterblaster
-A simple game developed in 6502 assembly for the Commodore 64 for the Booster 2020 Conference
-by John Christian Lønningdal and Ricki Sickenger
+A simple game developed in 6502 assembly for the Commodore 64 for the Booster 2022 Conference
+in Bergen by John Christian Lønningdal and Ricki Sickenger
 
 # Installation instructions
 
