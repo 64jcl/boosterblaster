@@ -26,7 +26,8 @@ https://marketplace.visualstudio.com/items?itemName=paulhocker.kick-assembler-vs
 
 Alternatively create another location for your tools and modify settings.json to reflect where they are.
 
-Press F5 to compile and run!
+Press F5 to compile and run if you have set up the KickAssembler extension!
+Otherwise run build.bat if on Windows.
 
 # Folder structure:
 ```
