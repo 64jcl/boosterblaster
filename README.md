@@ -30,12 +30,14 @@ Press F5 to compile and run!
 
 # Folder structure:
 ```
-bin/       Binary output folder
-lib/       Library asm files
-res/       Resources like charsets and sprites
-design/    Design of charsets and sprites
-docs/      Some helping documents for coding
-examples/  A couple of 6502 code examples
+bin/         Binary output folder
+lib/         Library asm files
+res/         Resources like charsets and sprites
+design/      Design of charsets and sprites
+docs/        Some helping documents for coding
+examples/    A couple of 6502 code examples
+assignments/ Solutions to the 4 assignments including full game
+main.asm     The actual game code but with 4 empty functions as assignments
 ```
 
 # Some tools we recommend
