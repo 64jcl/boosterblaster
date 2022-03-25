@@ -16,7 +16,7 @@ OR
    And unpack it in <boosterblaster-folder>/tools/kick/
 
 * Download Vice emulator from: http://vice-emu.sourceforge.net/
-   For Windows users: Unpack it in the folder C:/Applications/Vice
+   For Windows users: Unpack it in the folder <boosterblaster-folder>/tools/vice
    For OSX users: Install it. Check if 'x64sc' is in /usr/local/bin/
    If not, we need to link it up, from /usr/local/Celler/vice/<version>/x64sc
 
@@ -29,17 +29,19 @@ https://marketplace.visualstudio.com/items?itemName=paulhocker.kick-assembler-vs
 Alternatively create another location for your tools and modify settings.json to reflect where they are.
 
 Press F5 to compile and run if you have set up the KickAssembler extension.
-Otherwise run build.bat on Windows or osx-build.sh on Mac.
+Otherwise run build.bat on Windows or osx-build.sh on Mac (both assume /tools/ folder is set up)
 
 # Folder structure:
 ```
-bin/         Binary output folder
+bin/         Binary output folder (not part of repo, but build will create main.prg here)
 lib/         Library asm files
 res/         Resources like charsets and sprites
 design/      Design of charsets and sprites
 docs/        Some helping documents for coding
 examples/    A couple of 6502 code examples
 assignments/ Solutions to the 4 assignments including full game
+tools/       The folder you place your tools in to use the build scripts
+   
 main.asm     The actual game code but with 4 empty functions as assignments
 ```
 
