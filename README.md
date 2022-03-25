@@ -16,7 +16,7 @@ OR
    And unpack it in <boosterblaster-folder>/tools/kick/
 
 * Download Vice emulator from: http://vice-emu.sourceforge.net/
-   For Windows users: Unpack it in the folder <boosterblaster-folder>/tools/vice
+   For Windows users: Unpack it in the folder <boosterblaster-folder>/tools/vice/
    For OSX users: Install it. Check if 'x64sc' is in /usr/local/bin/
    If not, we need to link it up, from /usr/local/Celler/vice/<version>/x64sc
 
