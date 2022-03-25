@@ -1,36 +1,44 @@
 # boosterblaster
-A simple game developed in 6502 assembly for the Commodore 64 for the Booster 2020 Conference
-by John Christian Lønningdal and Ricki Sickenger
+A simple game developed in 6502 assembly for the Commodore 64 for the Booster 2022 Conference
+in Bergen by John Christian Lønningdal and Ricki Sickenger
 
 # Installation instructions
 
-1. Install Visual Studio Code
+* Install Visual Studio Code
 
-2. Add the Kick Assembler extension by Paul Hocker:
+* Download KickAssembler and Vice (Windows) from https://www.badgerpunch.com/booster/
+
+OR 
+
+* Download KickAssembler from: http://theweb.dk/KickAssembler
+   And unpack it in <boosterblaster-folder>/tools/kick/
+
+* Download Vice emulator from: http://vice-emu.sourceforge.net/
+   For Windows users: Unpack it in the folder C:/Applications/Vice
+   For OSX users: Install it. Check if 'x64sc' is in /usr/local/bin/
+   If not, we need to link it up, from /usr/local/Celler/vice/<version>/x64sc
+
+* Optional: Add the Kick Assembler extension by Paul Hocker to VSCode:
 https://marketplace.visualstudio.com/items?itemName=paulhocker.kick-assembler-vscode-ext
 
-3. Create a folder C:/Applications/
 
-4. Download KickAssembler from: http://theweb.dk/KickAssembler
-   And unpack it in C:/Applications/KickAssembler
-
-5. Download Vice emulator from: http://vice-emu.sourceforge.net/
-   Unpack it in the folder C:/Applications/Vice
-
-6. Download Java JRE/JDK or just adjust settings.json to point to your Java JRE bin folder
+* Download Java JRE/JDK or just adjust settings.json to point to your Java JRE bin folder
 
 Alternatively create another location for your tools and modify settings.json to reflect where they are.
 
-Press F5 to compile and run!
+Press F5 to compile and run if you have set up the KickAssembler extension!
+Otherwise run build.bat if on Windows.
 
 # Folder structure:
 ```
-bin/       Binary output folder
-lib/       Library asm files
-res/       Resources like charsets and sprites
-design/    Design of charsets and sprites
-docs/      Some helping documents for coding
-examples/  A couple of 6502 code examples
+bin/         Binary output folder
+lib/         Library asm files
+res/         Resources like charsets and sprites
+design/      Design of charsets and sprites
+docs/        Some helping documents for coding
+examples/    A couple of 6502 code examples
+assignments/ Solutions to the 4 assignments including full game
+main.asm     The actual game code but with 4 empty functions as assignments
 ```
 
 # Some tools we recommend
