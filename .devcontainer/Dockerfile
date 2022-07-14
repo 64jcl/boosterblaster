@@ -1,4 +1,3 @@
-# https://gist.github.com/teekaay/39bff8c66cd8e43c2ba57a6b2eef4fa8
 FROM ubuntu:latest
 
 RUN apt-get update && \
