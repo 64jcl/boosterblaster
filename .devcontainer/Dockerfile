@@ -1,0 +1,1 @@
+FROM barrywalker71/kickassembler:latest
