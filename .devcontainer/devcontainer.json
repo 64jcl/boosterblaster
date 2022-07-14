@@ -1,3 +1,4 @@
 {
-  "build": { "dockerfile": "Dockerfile" }
+  "name": "Kickassembler",
+  "dockerFile": "Dockerfile"
 }
