@@ -7,12 +7,11 @@
             "type": "process",
             "args": [
                 "-cp",
-                "./tools/kickass/KickAss.jar",
+                "/tools/kickass/KickAss.jar",
                 "cml.kickass.KickAssembler",
                 "main.asm",
                 "-vicesymbols",
-                "-showmem",
-                "-odir ./bin"
+                "-showmem"
             ],
             "problemMatcher": "$msCompile"
         }
