@@ -1,1 +1,2 @@
-cp -r /tools /workspaces/boosterblaster/tools
+cp -r /tools /workspaces/boosterblaster
+chmod +x tools
