@@ -11,7 +11,8 @@
                 "cml.kickass.KickAssembler",
                 "main.asm",
                 "-vicesymbols",
-                "-showmem"
+                "-showmem",
+                "-odir bin"
             ],
             "problemMatcher": "$msCompile"
         }

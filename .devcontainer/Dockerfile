@@ -14,5 +14,10 @@ RUN apt-get update \
 RUN wget https://www.badgerpunch.com/booster/kickass.zip
 RUN wget https://www.badgerpunch.com/booster/vice.zip
 RUN unzip /kickass.zip -d tools
-RUN unzip /vice.zip -d tools
+RUN unzip /vice.zip -d tool
+
+RUN chown -R $USER_UID:$USER_GID /home/$USERNAME
+RUN mkdir -p /workspaces/boosterblaster
+RUN chown -R $USER_UID:$USER_GID /workspaces/boosterblaster
+
 USER $USERNAME
