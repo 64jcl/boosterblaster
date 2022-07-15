@@ -1,2 +1,2 @@
 cp -r /tools /workspaces/boosterblaster
-chmod +x tools
+chmod +x ./tools/vice/bin/x64sc.exe
