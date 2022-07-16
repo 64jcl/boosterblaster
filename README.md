@@ -7,6 +7,8 @@ in Bergen by John Christian Lønningdal and Ricki Sickenger
 # Attempt at automating the install
 
 ## WSL2 on Windows
+This setup should work with installing on Ubuntu in WSL2.
+It is using the neat litle trick of WSL's ability to run Windows programs to launch VICe.
 
 ```bash
 ./install_deps_linux.sh
