@@ -10,10 +10,12 @@ in Bergen by John Christian Lønningdal and Ricki Sickenger
 This setup should work with installing on Ubuntu in WSL2.
 It is using the neat litle trick of WSL's ability to run Windows programs to launch VICe.
 
+Install recommended extensions (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>, "Extensions: Show Recommended Extensions")
 ```bash
 ./install_deps_linux.sh
 ```
-Modify .vscode/settings.json file paths
+Modify .vscode/settings.json file paths, these must be absolute so will have to refere to location of repository.
+Java is likely in the path below.
 
 ```json
     "kickassembler.javaRuntime": " /usr/bin/java",
