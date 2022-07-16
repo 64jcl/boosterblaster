@@ -47,9 +47,9 @@ main.asm     The actual game code but with 4 empty functions as assignments
 
 # Some tools we recommend
 
-Charpad to edit character/tile sets: http://www.subchristsoftware.com/charpadfree/index.htm
+Charpad to edit character/tile sets: https://subchristsoftware.itch.io/charpad-free-edition
 
-Spritepad to edit sprites: http://www.subchristsoftware.com/spritepad/index.htm
+Spritepad to edit sprites: Deprecated in free mode? https://subchristsoftware.itch.io/spritepad-pro
 
 Character editor for character sets (online) : https://lvllvl.com/
 
