@@ -11,6 +11,8 @@ This setup should work with installing on Ubuntu in WSL2.
 It is using the neat litle trick of WSL's ability to run Windows programs to launch VICe.
 
 Install recommended extensions (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>, "Extensions: Show Recommended Extensions")
+
+Install dependencies. If you hava Java, comment out the line that installs the JDK first. It should be minimum version 11.
 ```bash
 ./install_deps_linux.sh
 ```
@@ -23,6 +25,10 @@ Java is likely in the path below.
     "kickassembler.emulator.runtime": "{PATH_TO_REPO}/tools/vice/bin/x64sc.exe",
 ```
 ## Windows
+Installing Java on Windows is a pain. Try installing from the msi file at 
+https://docs.microsoft.com/nb-no/java/openjdk/download, such as https://aka.ms/download-jdk/microsoft-jdk-11.0.15-windows-x64.msi and install it.
+Remember to tick all the boxes just to be sure.
+
 
 # Installation instructions
 

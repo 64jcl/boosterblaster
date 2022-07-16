@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Java 8 is enough for kickassembler, but retro studio complained and wanted 8
+# Java 8 is enough for kickassembler, but retro studio complained and wanted 11 
 sudo apt-get -y install openjdk-11-jre-headless unzip
 
 cd tools
