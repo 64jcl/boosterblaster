@@ -4,6 +4,16 @@ in Bergen by John Christian Lønningdal and Ricki Sickenger
 
 ![Screenshot](./design/screenshot.png)
 
+# Attempt at automating the install
+
+## WSL2 on Windows
+
+
+```bash
+./install_deps_linux.sh
+```
+## Windows
+
 # Installation instructions
 
 * Install Visual Studio Code
