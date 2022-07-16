@@ -11,3 +11,4 @@ unzip vice.zip
 rm kickass.zip
 rm vice.zip
 cd ..
+chmod +x tools/vice/bin/x64sc.exe

@@ -17,4 +17,5 @@
     // Java runtime path
     //"kickassembler.javaRuntime": "C:\\Program Files\\Java\\jre1.8.0_201\\bin\\java.exe",
     "kickassembler.javaRuntime": " /usr/bin/java",
+    "kickassembler.emulator.runtime": "/home/bjartwolf/code/boosterblaster2/tools/vice/bin/x64sc.exe",
 }
