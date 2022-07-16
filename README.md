@@ -11,6 +11,13 @@ in Bergen by John Christian Lønningdal and Ricki Sickenger
 ```bash
 ./install_deps_linux.sh
 ```
+Modify .vscode/settings.json file paths
+
+```json
+    "kickassembler.javaRuntime": " /usr/bin/java",
+    "kickassembler.assembler.jar": "{PATH_TO_REPO}/tools/kickass/kickassembler-5.19.jar",
+    "kickassembler.emulator.runtime": "{PATH_TO_REPO}/tools/vice/bin/x64sc.exe",
+```
 ## Windows
 
 # Installation instructions
