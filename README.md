@@ -8,7 +8,6 @@ in Bergen by John Christian Lønningdal and Ricki Sickenger
 
 ## WSL2 on Windows
 
-
 ```bash
 ./install_deps_linux.sh
 ```
