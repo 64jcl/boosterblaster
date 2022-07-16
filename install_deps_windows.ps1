@@ -3,4 +3,4 @@ wget https://www.badgerpunch.com/booster/vice.zip -OutFile vice.zip
 Expand-Archive -DestinationPath tools kickass.zip
 Expand-Archive -DestinationPath tools vice.zip
 del kickass.zip
-kdel vice.zip
+del vice.zip
