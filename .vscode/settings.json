@@ -1,15 +1,21 @@
 {
-    "kickassembler.assemblerJar": "C:\\Applications\\KickAssembler\\KickAss.jar",
     "kickassembler.debuggerRuntime": "C:\\Applications\\Vice\\x64.exe",
-    "kickassembler.emulatorRuntime": "C:\\Applications\\Vice\\x64.exe",
-    "kickassembler.outputDirectory": "bin",
+    "kickassembler.assembler.option.outputDirectory": "bin",
     "kickassembler.assemblerLibraryPaths": [
         "lib"
     ],
-    "kickassembler.javaRuntime": "C:\\Program Files\\Java\\jre1.8.0_201\\bin\\java.exe",
     "kickassembler.emulatorOptions": "-moncommand main.vs",
     "kickassembler.debuggerOptions": "-moncommand main.vs",
     "kickassembler.startup": "main.asm",
     "kickassembler.fileTypesBinary": "bin",
-    "vetur.format.options.tabSize": 4
+    "vetur.format.options.tabSize": 4,
+    // Modify this to match the path to the repository
+    //"kickassembler.assembler.jar": "C:\\Applications\\KickAssembler\\KickAss.jar",
+    "kickassembler.assembler.jar": "/{path-to-repo}/tools/kickass/kickassembler-5.19.jar",// example "/home/bjartwolf/code/boosterblaster/tools/kickass/kickassembler-5.19.jar",
+
+    // Java runtime path
+    //"kickassembler.javaRuntime": "C:\\Program Files\\Java\\jre1.8.0_201\\bin\\java.exe",
+    "kickassembler.javaRuntime": " /usr/bin/java",
+    //"kickassembler.emulatorRuntime": "C:\\Applications\\Vice\\x64.exe",
+    "kickassembler.emulator.runtime": "/{path-to-repo}/tools/vice/bin/x64sc.exe",
 }
